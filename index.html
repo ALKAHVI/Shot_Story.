@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Story Weaver's Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .draggable {
+            cursor: grab;
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        .dragging {
+            opacity: 0.5;
+            background-color: #e5e7eb;
+        }
+        /* Custom scrollbar for better look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-gray-800 h-screen flex flex-col">
+
+    <header class="bg-indigo-700 text-white shadow-md z-10 p-4">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-2">
+                <i data-lucide="book-open" class="w-8 h-8 text-indigo-200"></i>
+                <h1 class="text-2xl font-bold tracking-tight">Story Weaver's Challenge</h1>
+            </div>
+            
+            <div class="flex items-center gap-2 bg-indigo-800 rounded-lg p-1 w-full md:w-auto overflow-x-auto">
+                <button onclick="switchTab('student-info')" id="tab-btn-student-info" class="tab-btn px-4 py-2 rounded-md font-medium text-sm transition-colors bg-white text-indigo-700">1. Info</button>
+                <button onclick="switchTab('part1')" id="tab-btn-part1" class="tab-btn px-4 py-2 rounded-md font-medium text-sm transition-colors text-indigo-100 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled>2. Unscramble</button>
+                <button onclick="switchTab('part2')" id="tab-btn-part2" class="tab-btn px-4 py-2 rounded-md font-medium text-sm transition-colors text-indigo-100 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled>3. Write</button>
+                <button onclick="switchTab('finish')" id="tab-btn-finish" class="tab-btn px-4 py-2 rounded-md font-medium text-sm transition-colors text-indigo-100 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled>4. Finish</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto p-4 md:p-6 overflow-y-auto max-w-4xl">
+        
+        <!-- Tab 0: Student Info -->
+        <section id="student-info" class="tab-content active bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 mb-4">
+                    <i data-lucide="users" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome to the Challenge!</h2>
+                <p class="text-gray-600 max-w-lg mx-auto">Please enter your team details before beginning the Short Story adventure.</p>
+            </div>
+            
+            <div class="space-y-6 max-w-md mx-auto">
+                <div>
+                    <label for="group-name" class="block text-sm font-semibold text-gray-700 mb-1">Group Name</label>
+                    <input type="text" id="group-name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="e.g., The Midnight Writers">
+                </div>
+                
+                <div>
+                    <label for="member-names" class="block text-sm font-semibold text-gray-700 mb-1">Team Members (separated by commas)</label>
+                    <textarea id="member-names" rows="3" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none" placeholder="e.g., Andi, Budi, Citra"></textarea>
+                </div>
+                
+                <button onclick="startChallenge()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md">
+                    Start Challenge <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Tab 1: The Missing Pieces -->
+        <section id="part1" class="tab-content bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <i data-lucide="puzzle" class="text-indigo-600"></i> Part 1: The Missing Pieces
+            </h2>
+            <p class="text-gray-600 mb-6">Drag and drop the paragraphs below into the correct chronological order (Orientation &rarr; Complication &rarr; Climax). The Resolution is missing!</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Drag and Drop Area -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3 bg-gray-50 p-2 rounded-md border border-gray-200 text-center">Drag to Reorder</h3>
+                    <div id="sortable-list" class="space-y-3">
+                        <!-- Paragraphs will be injected here via JS -->
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p class="text-sm text-yellow-800 flex items-start gap-2">
+                            <i data-lucide="info" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                            <span><strong>Tip:</strong> Look for clues that indicate the beginning of the story (setting the scene) versus the rising action and climax.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Analysis Form -->
+                <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+                    <h3 class="text-lg font-semibold text-indigo-900 mb-4 flex items-center gap-2">
+                        <i data-lucide="search" class="w-5 h-5"></i> Story Analysis
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-indigo-900 mb-1">1. Characters (Who is in the story?)</label>
+                            <input type="text" id="analysis-chars" class="w-full px-3 py-2 rounded border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-indigo-900 mb-1">2. Setting (When and where?)</label>
+                            <input type="text" id="analysis-setting" class="w-full px-3 py-2 rounded border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-indigo-900 mb-1">3. Main Conflict (What is the problem?)</label>
+                            <textarea id="analysis-conflict" rows="3" class="w-full px-3 py-2 rounded border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-white"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-indigo-900 mb-1">4. Conflict Type</label>
+                            <select id="analysis-type" class="w-full px-3 py-2 rounded border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                                <option value="">Select type...</option>
+                                <option value="Internal">Internal (Character vs. Self)</option>
+                                <option value="External">External (Character vs. Outside Force)</option>
+                                <option value="Both">Both</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button onclick="checkPart1()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition-colors flex items-center justify-center gap-2">
+                        Continue to Part 2 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 2: The Writer's Room -->
+        <section id="part2" class="tab-content bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <i data-lucide="pen-tool" class="text-indigo-600"></i> Part 2: The Writer's Room
+            </h2>
+            <p class="text-gray-600 mb-6">The story ended on a cliffhanger! It's your job to write the <strong>Resolution</strong>.</p>
+            
+            <div id="genre-reveal-area" class="mb-8 text-center bg-gray-50 py-10 rounded-xl border-2 border-dashed border-gray-300">
+                <button onclick="drawGenre()" id="draw-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105 flex items-center gap-2 mx-auto">
+                    <i data-lucide="sparkles"></i> Draw Your Genre Constraint
+                </button>
+            </div>
+
+            <div id="writing-area" class="hidden">
+                <div id="assigned-genre-card" class="mb-6 p-4 rounded-lg shadow-sm border flex items-start gap-4">
+                    <div id="genre-icon" class="text-4xl"></div>
+                    <div>
+                        <h3 class="font-bold text-lg" id="genre-title">Genre Title</h3>
+                        <p class="text-sm text-gray-700" id="genre-desc">Genre constraint description goes here.</p>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h3 class="font-bold text-gray-800 mb-2">The Story So Far...</h3>
+                    <div class="bg-gray-50 p-4 rounded border text-sm text-gray-600 h-32 overflow-y-auto mb-4 italic border-l-4 border-l-indigo-400" id="story-recap">
+                        <!-- Ordered story will appear here -->
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <label for="resolution-text" class="block font-semibold text-gray-800">Your Resolution (100 - 150 words)</label>
+                        <span id="word-count" class="text-sm text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">0 words</span>
+                    </div>
+                    <textarea id="resolution-text" rows="8" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all resize-y" placeholder="Write the ending here based on your genre constraint... Remember to use Past Tense!"></textarea>
+                    
+                    <button onclick="finishChallenge()" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md">
+                        Complete Challenge <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 3: Finish (Screenshot Area) -->
+        <section id="finish" class="tab-content">
+            <!-- Notice bar that won't be part of the screenshot card (ideally) -->
+            <div class="bg-yellow-100 text-yellow-800 p-4 rounded-lg mb-6 flex items-center justify-between border border-yellow-300">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="camera" class="w-6 h-6"></i>
+                    <p class="font-medium">Awesome job! Take a screenshot of the card below and submit it to your teacher.</p>
+                </div>
+            </div>
+
+            <!-- The content to screenshot -->
+            <div id="screenshot-area" class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden relative">
+                
+                <!-- Decorative header -->
+                <div class="bg-gradient-to-r from-indigo-700 to-purple-700 p-6 text-white text-center relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+                    <h2 class="text-2xl font-bold relative z-10 flex items-center justify-center gap-2">
+                        <i data-lucide="award" class="w-6 h-6"></i> Story Weaver Challenge Completed!
+                    </h2>
+                </div>
+
+                <div class="p-6 md:p-8 space-y-6">
+                    
+                    <!-- Team Info -->
+                    <div class="flex justify-between items-start border-b border-gray-100 pb-4">
+                        <div>
+                            <p class="text-sm text-gray-500 uppercase tracking-wider font-semibold">Group Name</p>
+                            <h3 class="text-xl font-bold text-gray-900" id="res-group-name">-</h3>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-500 uppercase tracking-wider font-semibold">Members</p>
+                            <p class="text-gray-800 font-medium" id="res-members">-</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Analysis Results -->
+                        <div class="bg-indigo-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-indigo-900 mb-3 border-b border-indigo-200 pb-1">Part 1: Story Analysis</h4>
+                            <ul class="space-y-2 text-sm">
+                                <li><strong>Characters:</strong> <span id="res-chars" class="text-gray-700"></span></li>
+                                <li><strong>Setting:</strong> <span id="res-setting" class="text-gray-700"></span></li>
+                                <li><strong>Conflict Type:</strong> <span id="res-type" class="inline-block bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded text-xs"></span></li>
+                                <li><strong>Main Problem:</strong> <span id="res-conflict" class="text-gray-700 italic"></span></li>
+                            </ul>
+                        </div>
+
+                        <!-- Genre Card -->
+                        <div id="res-genre-card" class="p-4 rounded-lg border-2 border-gray-200 flex flex-col justify-center items-center text-center">
+                            <p class="text-sm text-gray-500 uppercase tracking-wider font-semibold mb-1">Assigned Constraint</p>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span id="res-genre-icon" class="text-3xl"></span>
+                                <h4 class="text-xl font-bold" id="res-genre-title"></h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Final Resolution -->
+                    <div>
+                        <h4 class="font-bold text-gray-900 mb-2 border-b border-gray-200 pb-1 flex items-center justify-between">
+                            <span>Part 2: Original Resolution</span>
+                            <span id="res-word-count" class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded"></span>
+                        </h4>
+                        <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 shadow-inner">
+                            <p id="res-text" class="text-gray-800 whitespace-pre-wrap leading-relaxed font-serif"></p>
+                        </div>
+                    </div>
+
+                    <div class="text-center pt-4">
+                        <p class="text-xs text-gray-400">Generated on <span id="timestamp"></span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center pb-8">
+                <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white py-2 px-6 rounded-lg inline-flex items-center gap-2">
+                    <i data-lucide="printer" class="w-4 h-4"></i> Print / Save as PDF
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Data Models
+        const rawParagraphs = [
+            {
+                id: 'A',
+                text: 'As the weeks turned into months, the whispering grew louder, not just at night, but during the day. Elias found objects moved: his compass on the floor, maps torn, and once, a chilling message etched into the frosty window: "Leave." The isolation was getting to him, but his stubbornness—and his contract with the weather station—kept him rooted.',
+                correctOrder: 1 // Complication (Rising Action)
+            },
+            {
+                id: 'B',
+                text: "Elias Vance was a man who preferred the company of barometers to people. Stationed at the remote 'Outpost 4' in the desolate tundra of northern Svalbard, his job was to monitor incoming blizzards. It was a lonely existence, surrounded by miles of blinding white snow, but Elias loved the quiet. At least, he did until the long polar night began.",
+                correctOrder: 0 // Orientation
+            },
+            {
+                id: 'C',
+                text: "The real terror struck on a Tuesday. The generator, their only source of heat and light, suddenly sputtered and died. Elias rushed to the maintenance shed, the howling wind threatening to blow him away. Inside, he didn't find a mechanical failure. He found the fuel lines deliberately slashed. As he stood shivering in the dark shed, he heard a distinct crunch of snow outside the door. He wasn't alone.",
+                correctOrder: 2 // Complication (Climax)
+            }
+        ];
+
+        const genres = [
+            {
+                id: 'scifi',
+                title: 'Sci-Fi (Science Fiction)',
+                icon: '👽',
+                desc: 'The ending must involve alien technology, extraterrestrial beings, or futuristic science.',
+                color: 'bg-blue-100 border-blue-400 text-blue-900'
+            },
+            {
+                id: 'thriller',
+                title: 'Psychological Thriller',
+                icon: '🧠',
+                desc: 'The threat must be revealed to be in Elias\'s own mind (hallucinations due to extreme isolation).',
+                color: 'bg-red-100 border-red-400 text-red-900'
+            },
+            {
+                id: 'mystery',
+                title: 'Mystery / Crime',
+                icon: '🕵️',
+                desc: 'The culprit must be a normal human with a clear motive (e.g., a smuggler hiding out, a saboteur).',
+                color: 'bg-yellow-100 border-yellow-400 text-yellow-900'
+            },
+            {
+                id: 'supernatural',
+                title: 'Supernatural / Horror',
+                icon: '👻',
+                desc: 'The ending must involve local myths, ghosts, or mythical creatures of the tundra (like a Yeti).',
+                color: 'bg-purple-100 border-purple-400 text-purple-900'
+            }
+        ];
+
+        let assignedGenre = null;
+
+        // Initialize Drag and Drop List
+        function renderSortableList() {
+            const container = document.getElementById('sortable-list');
+            container.innerHTML = '';
+            
+            rawParagraphs.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'draggable bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-grab active:cursor-grabbing flex gap-3 select-none hover:border-indigo-300 transition-colors group';
+                item.draggable = true;
+                item.dataset.id = p.id;
+                
+                item.innerHTML = `
+                    <div class="flex flex-col items-center justify-center text-gray-400 group-hover:text-indigo-500">
+                        <i data-lucide="grip-vertical"></i>
+                    </div>
+                    <div class="text-sm text-gray-700 flex-grow">
+                        <span class="font-bold text-xs bg-gray-100 px-2 py-1 rounded mr-2 mb-1 inline-block">Part ${p.id}</span>
+                        ${p.text}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+            lucide.createIcons();
+            initDragAndDrop();
+        }
+
+        function initDragAndDrop() {
+            const draggables = document.querySelectorAll('.draggable');
+            const container = document.getElementById('sortable-list');
+
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', () => {
+                    draggable.classList.add('dragging');
+                });
+
+                draggable.addEventListener('dragend', () => {
+                    draggable.classList.remove('dragging');
+                });
+            });
+
+            container.addEventListener('dragover', e => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(container, e.clientY);
+                const draggable = document.querySelector('.dragging');
+                if (afterElement == null) {
+                    container.appendChild(draggable);
+                } else {
+                    container.insertBefore(draggable, afterElement);
+                }
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // Tab Management
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            
+            // Update button styles
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-indigo-700');
+                btn.classList.add('text-indigo-100');
+            });
+            
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            activeBtn.classList.add('bg-white', 'text-indigo-700');
+            activeBtn.classList.remove('text-indigo-100', 'hover:bg-indigo-600');
+        }
+
+        // Form Validation & Flow Control
+        function startChallenge() {
+            const gName = document.getElementById('group-name').value.trim();
+            const mNames = document.getElementById('member-names').value.trim();
+            
+            if(!gName || !mNames) {
+                alert("Please fill in both Group Name and Team Members before starting.");
+                return;
+            }
+            
+            // Enable next tab
+            document.getElementById('tab-btn-part1').disabled = false;
+            renderSortableList();
+            switchTab('part1');
+        }
+
+        function checkPart1() {
+            const chars = document.getElementById('analysis-chars').value.trim();
+            const setting = document.getElementById('analysis-setting').value.trim();
+            const conflict = document.getElementById('analysis-conflict').value.trim();
+            const type = document.getElementById('analysis-type').value;
+
+            if(!chars || !setting || !conflict || !type) {
+                alert("Please fill out all fields in the Story Analysis.");
+                return;
+            }
+
+            // Get current order of paragraphs
+            const currentOrder = Array.from(document.querySelectorAll('#sortable-list .draggable')).map(el => el.dataset.id);
+            
+            // Reconstruct story for part 2
+            const orderedStoryDiv = document.getElementById('story-recap');
+            orderedStoryDiv.innerHTML = '';
+            currentOrder.forEach(id => {
+                const para = rawParagraphs.find(p => p.id === id);
+                orderedStoryDiv.innerHTML += `<p class="mb-2">${para.text}</p>`;
+            });
+
+            document.getElementById('tab-btn-part2').disabled = false;
+            switchTab('part2');
+        }
+
+        function drawGenre() {
+            // Pick random genre
+            assignedGenre = genres[Math.floor(Math.random() * genres.length)];
+            
+            // Hide reveal button area, show writing area
+            document.getElementById('genre-reveal-area').classList.add('hidden');
+            const writingArea = document.getElementById('writing-area');
+            writingArea.classList.remove('hidden');
+            
+            // Populate constraint card
+            const card = document.getElementById('assigned-genre-card');
+            card.className = `mb-6 p-4 rounded-lg shadow-sm border flex items-center gap-4 ${assignedGenre.color}`;
+            document.getElementById('genre-icon').textContent = assignedGenre.icon;
+            document.getElementById('genre-title').textContent = assignedGenre.title;
+            document.getElementById('genre-desc').textContent = assignedGenre.desc;
+        }
+
+        // Live Word Count
+        document.getElementById('resolution-text').addEventListener('input', function() {
+            const text = this.value.trim();
+            const words = text === '' ? 0 : text.split(/\s+/).length;
+            const counter = document.getElementById('word-count');
+            counter.textContent = `${words} words`;
+            
+            if (words < 100) {
+                counter.className = "text-sm text-red-600 font-mono bg-red-50 px-2 py-1 rounded";
+            } else if (words > 150) {
+                counter.className = "text-sm text-yellow-600 font-mono bg-yellow-50 px-2 py-1 rounded";
+            } else {
+                counter.className = "text-sm text-green-600 font-mono bg-green-50 px-2 py-1 rounded font-bold";
+            }
+        });
+
+        function finishChallenge() {
+            const resText = document.getElementById('resolution-text').value.trim();
+            const words = resText === '' ? 0 : resText.split(/\s+/).length;
+
+            if (words < 50) {
+                alert("Your resolution is too short. Please write at least 50 words (aim for 100-150).");
+                return;
+            }
+
+            // Populate Final Screen Data
+            document.getElementById('res-group-name').textContent = document.getElementById('group-name').value;
+            document.getElementById('res-members').textContent = document.getElementById('member-names').value;
+            
+            document.getElementById('res-chars').textContent = document.getElementById('analysis-chars').value;
+            document.getElementById('res-setting').textContent = document.getElementById('analysis-setting').value;
+            document.getElementById('res-type').textContent = document.getElementById('analysis-type').value;
+            document.getElementById('res-conflict').textContent = document.getElementById('analysis-conflict').value;
+
+            // Genre Card in Result
+            const resGenreCard = document.getElementById('res-genre-card');
+            resGenreCard.className = `p-4 rounded-lg border-2 flex flex-col justify-center items-center text-center ${assignedGenre.color}`;
+            document.getElementById('res-genre-icon').textContent = assignedGenre.icon;
+            document.getElementById('res-genre-title').textContent = assignedGenre.title;
+
+            document.getElementById('res-text').textContent = resText;
+            document.getElementById('res-word-count').textContent = `${words} words`;
+            
+            // Timestamp
+            const now = new Date();
+            document.getElementById('timestamp').textContent = now.toLocaleString();
+
+            document.getElementById('tab-btn-finish').disabled = false;
+            switchTab('finish');
+        }
+        
+        // Prevent accidental closing
+        window.addEventListener('beforeunload', function (e) {
+            // Cancel the event
+            e.preventDefault(); 
+            // Chrome requires returnValue to be set
+            e.returnValue = '';
+        });
+    </script>
+</body>
+</html>
